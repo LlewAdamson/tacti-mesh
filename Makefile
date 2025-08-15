@@ -108,7 +108,7 @@ run: check-deps ## Run the application in production mode
 		echo "$(YELLOW)Dependencies not installed. Running setup...$(NC)"; \
 		$(MAKE) install-frontend; \
 	fi
-	@cd $(ELECTRON_DIR) && $(NPM) run electron:dev
+	@cd $(ELECTRON_DIR) && $(NPM) run electron:prod
 
 ## Development mode - with hot reload
 dev: ## Start in development mode with hot reload

@@ -55,6 +55,7 @@ export interface NetworkState {
   removeLink: (source: string, target: string) => void;
   
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
+  sendDirectMessage: (targetNodeId: string, message: Omit<Message, 'id' | 'timestamp' | 'type'>) => { success: boolean; route?: string[] };
   clearMessages: () => void;
   
   setNetworkStatus: (status: NetworkState['networkStatus']) => void;
@@ -210,6 +211,96 @@ export const useTactiMeshStore = create<NetworkState>()(
         timestamp: new Date(),
       }],
     })),
+    
+    sendDirectMessage: (targetNodeId, message) => {
+      const state = get();
+      const targetNode = state.getNodeById(targetNodeId);
+      const localNode = state.getNodeById(state.localNodeId);
+      
+      if (!targetNode || !localNode) {
+        return { success: false };
+      }
+      
+      // Check if target is online
+      if (targetNode.status === 'offline') {
+        // Add system message about offline node
+        state.addMessage({
+          senderId: 'system',
+          senderName: 'System',
+          content: `❌ Cannot send message to ${targetNode.name}: Node is offline`,
+          type: 'system',
+          priority: 'high',
+          encrypted: false,
+        });
+        return { success: false };
+      }
+      
+      // Check if there's a direct link
+      const directLink = state.links.find(link => 
+        (link.source === state.localNodeId && link.target === targetNodeId) ||
+        (link.source === targetNodeId && link.target === state.localNodeId)
+      );
+      
+      if (directLink && directLink.status === 'active') {
+        // Direct connection available
+        state.addMessage({
+          ...message,
+          type: 'direct',
+          content: `[Direct] ${message.content}`,
+        });
+        return { success: true, route: [localNode.name, targetNode.name] };
+      }
+      
+      // Try to find a route through relay nodes
+      const relayNodes = state.nodes.filter(n => 
+        n.type === 'relay' && n.status === 'online' && n.id !== state.localNodeId && n.id !== targetNodeId
+      );
+      
+      for (const relay of relayNodes) {
+        const toRelay = state.links.find(link => 
+          (link.source === state.localNodeId && link.target === relay.id) ||
+          (link.source === relay.id && link.target === state.localNodeId)
+        );
+        
+        const fromRelay = state.links.find(link => 
+          (link.source === relay.id && link.target === targetNodeId) ||
+          (link.source === targetNodeId && link.target === relay.id)
+        );
+        
+        if (toRelay?.status === 'active' && fromRelay?.status === 'active') {
+          // Found a route through relay
+          state.addMessage({
+            ...message,
+            type: 'direct',
+            content: `[Via ${relay.name}] ${message.content}`,
+          });
+          
+          // Add routing info message
+          state.addMessage({
+            senderId: 'system',
+            senderName: 'System',
+            content: `📡 Message routed to ${targetNode.name} via ${relay.name}`,
+            type: 'system',
+            priority: 'low',
+            encrypted: false,
+          });
+          
+          return { success: true, route: [localNode.name, relay.name, targetNode.name] };
+        }
+      }
+      
+      // No route found
+      state.addMessage({
+        senderId: 'system',
+        senderName: 'System',
+        content: `❌ Routing failed: No mesh route available to ${targetNode.name}`,
+        type: 'system',
+        priority: 'high',
+        encrypted: false,
+      });
+      
+      return { success: false };
+    },
     
     clearMessages: () => set({ messages: [] }),
     

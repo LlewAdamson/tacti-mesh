@@ -17,6 +17,8 @@
     "electron": "wait-on tcp:5173 && cross-env IS_DEV=true electron .",
     "electron:pack": "electron-builder",
     "electron:dev": "concurrently \"npm run dev\" \"npm run electron\"",
+    "electron:prod": "concurrently \"npm run dev\" \"npm run electron:prod-only\"",
+    "electron:prod-only": "wait-on tcp:5173 && cross-env IS_DEV=false electron .",
     "build:for-electron": "tsc && vite build",
     "test": "echo \"No tests configured yet\" && exit 0",
     "lint": "echo \"No linter configured yet\" && exit 0",

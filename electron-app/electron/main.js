@@ -14,13 +14,15 @@ let mainWindow = null;
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 1024,
-    minHeight: 768,
+    width: 1920,
+    height: 1200,
+    minWidth: 1600,
+    minHeight: 900,
     show: false,
+    center: true, // Center the window on screen
     icon: path.join(__dirname, '../public/icon.png'),
-    titleBarStyle: isMac ? 'hiddenInset' : 'default',
+    titleBarStyle: 'default', // Use default title bar for proper dragging
+    trafficLightPosition: isMac ? { x: 15, y: 15 } : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -32,6 +34,9 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
     
+    // Maximize window for better visibility
+    mainWindow?.maximize();
+    
     // Open DevTools in development
     if (isDev) {
       mainWindow?.webContents.openDevTools();
@@ -39,11 +44,9 @@ function createWindow() {
   });
 
   // Load the app
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-  }
+  // Always use dev server when running from npm scripts
+  // For production builds, this will be changed during build process
+  mainWindow.loadURL('http://localhost:5173');
 
   // Open links in browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

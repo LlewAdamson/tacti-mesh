@@ -5,24 +5,41 @@ const CommsPanel: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<'low' | 'normal' | 'high' | 'critical'>('normal');
   const [isEncrypted, setIsEncrypted] = useState(true);
+  const [selectedRecipient, setSelectedRecipient] = useState<string>('broadcast');
   
   const messages = useTactiMeshStore((state) => state.getRecentMessages(50));
   const addMessage = useTactiMeshStore((state) => state.addMessage);
+  const sendDirectMessage = useTactiMeshStore((state) => state.sendDirectMessage);
   const localNodeId = useTactiMeshStore((state) => state.localNodeId);
   const getNodeById = useTactiMeshStore((state) => state.getNodeById);
+  const nodes = useTactiMeshStore((state) => state.nodes);
+  const getActiveNodes = useTactiMeshStore((state) => state.getActiveNodes);
   
   const localNode = getNodeById(localNodeId);
+  const availableRecipients = getActiveNodes().filter(n => n.id !== localNodeId);
   
   const sendMessage = () => {
     if (newMessage.trim() && localNode) {
-      addMessage({
-        senderId: localNodeId,
-        senderName: localNode.name,
-        content: newMessage.trim(),
-        type: 'broadcast',
-        priority: selectedPriority,
-        encrypted: isEncrypted,
-      });
+      if (selectedRecipient === 'broadcast') {
+        // Broadcast message
+        addMessage({
+          senderId: localNodeId,
+          senderName: localNode.name,
+          content: newMessage.trim(),
+          type: 'broadcast',
+          priority: selectedPriority,
+          encrypted: isEncrypted,
+        });
+      } else {
+        // Direct message with routing
+        sendDirectMessage(selectedRecipient, {
+          senderId: localNodeId,
+          senderName: localNode.name,
+          content: newMessage.trim(),
+          priority: selectedPriority,
+          encrypted: isEncrypted,
+        });
+      }
       setNewMessage('');
     }
   };
@@ -100,8 +117,24 @@ const CommsPanel: React.FC = () => {
       {/* Message Input */}
       <div className="p-4 border-t border-military-dark-600 space-y-3">
         {/* Message options */}
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex flex-col space-y-2 text-xs">
           <div className="flex items-center space-x-3">
+            <label className="flex items-center space-x-1">
+              <span className="text-military-gray-400">To:</span>
+              <select 
+                value={selectedRecipient} 
+                onChange={(e) => setSelectedRecipient(e.target.value)}
+                className="input-tactical py-1 px-2 text-xs min-w-[120px]"
+              >
+                <option value="broadcast">ALL (Broadcast)</option>
+                {availableRecipients.map(node => (
+                  <option key={node.id} value={node.id}>
+                    {node.name} ({node.type})
+                  </option>
+                ))}
+              </select>
+            </label>
+            
             <label className="flex items-center space-x-1">
               <span className="text-military-gray-400">Priority:</span>
               <select 
