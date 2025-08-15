@@ -1,14 +1,14 @@
-# TactiMesh
-
 <div align="center">
-  <img src="assets/logo.png" alt="TactiMesh Logo" width="200" />
-
+  
+  # 🌐 TactiMesh
+  
   **A tactical mesh network visualization and command system**
-
+  
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Electron](https://img.shields.io/badge/Electron-27.1.2-blue.svg)](https://www.electronjs.org/)
   [![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue.svg)](https://www.typescriptlang.org/)
+  [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/LlewAdamson/tacti-mesh/releases)
 </div>
 
 ## 📖 Overview
@@ -37,53 +37,80 @@ TactiMesh is a sophisticated mesh network visualization and management system bu
 ### Prerequisites
 - Node.js 18.0 or higher
 - npm or yarn package manager
-- Python 3.8+ (for backend services)
-- Docker and Docker Compose (optional, for containerized deployment)
+- Python 3.8+ (optional, for backend services)
+- Make (usually pre-installed on Unix systems)
 
-### Installation
+### One-Line Setup & Run
+
+```bash
+# Clone, setup, and start TactiMesh
+git clone https://github.com/LlewAdamson/tacti-mesh.git && cd tacti-mesh && make setup && make start
+```
+
+### Step-by-Step Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/tacti-mesh.git
+   git clone https://github.com/LlewAdamson/tacti-mesh.git
    cd tacti-mesh
    ```
 
-2. **Install Electron app dependencies**
+2. **Run initial setup** (installs all dependencies)
    ```bash
-   cd electron-app
-   npm install
+   make setup
    ```
 
-3. **Install backend dependencies**
+3. **Start the application**
    ```bash
-   cd ../backend/app
-   pip install -r requirements.txt
+   make start    # Production mode
+   # OR
+   make dev      # Development mode with hot-reload
    ```
+
+### Alternative: Manual Installation
+
+If you prefer not to use Make:
+
+```bash
+# Install frontend dependencies
+cd electron-app && npm install
+
+# Install backend dependencies (if needed)
+cd ../backend/app && pip install -r requirements.txt
+
+# Start the application
+cd ../../electron-app && npm run electron:dev
+```
 
 ### Running the Application
 
-#### Development Mode
+#### Using Make (Recommended)
 ```bash
-# Start the Electron app in development mode
-cd electron-app
-npm run electron:dev
+# Quick commands
+make start    # Start in production mode
+make dev      # Start in development mode
+make build    # Build for production
+make status   # Check project status
+make help     # Show all available commands
+
+# Shortcuts
+make s        # Same as 'make start'
+make d        # Same as 'make dev'
+make b        # Same as 'make build'
 ```
 
-This will start both the Vite development server and the Electron application with hot-reload enabled.
-
-#### Production Build
+#### Platform-Specific Builds
 ```bash
-# Build the Electron application
-cd electron-app
-npm run build
-
-# The built application will be in the dist-electron folder
+make build:mac     # Build for macOS
+make build:win     # Build for Windows
+make build:linux   # Build for Linux
 ```
 
 #### Docker Deployment (Optional)
 ```bash
-# From the project root
-docker-compose up -d
+make docker-up     # Start with docker-compose
+make docker-down   # Stop docker services
+make docker-build  # Build docker images
 ```
 
 ## 🏗️ Architecture
@@ -97,18 +124,27 @@ tacti-mesh/
 │   │   │   ├── main.ts    # Main process entry point
 │   │   │   └── preload.ts # Preload script for IPC
 │   │   ├── renderer/      # React application
+│   │   │   ├── components/ # React components
+│   │   │   │   ├── CommsPanel.tsx
+│   │   │   │   ├── NetworkGraph.tsx
+│   │   │   │   └── StatusBar.tsx
 │   │   │   ├── App.tsx    # Main application component
 │   │   │   └── App-simple.tsx # Simplified view
 │   │   ├── stores/        # State management
 │   │   │   └── tactiMeshStore.ts # Zustand store
 │   │   └── main.tsx       # Renderer entry point
-│   ├── package.json       # Node dependencies
-│   └── vite.config.ts     # Vite configuration
+│   ├── package.json       # Node dependencies & build config
+│   ├── tsconfig.json      # TypeScript configuration
+│   ├── vite.config.ts     # Vite configuration
+│   └── tailwind.config.js # Tailwind CSS configuration
 ├── backend/               # Python backend services
 │   └── app/
 │       ├── main.py        # FastAPI application
 │       └── requirements.txt
-└── docker-compose.yml     # Container orchestration
+├── Makefile              # Build automation & commands
+├── README.md             # Project documentation
+├── .gitignore            # Git ignore rules
+└── docker-compose.yml    # Container orchestration
 ```
 
 ### Technology Stack
@@ -151,29 +187,67 @@ The tactical map includes:
 
 ## 🛠️ Development
 
-### Available Scripts
+### Makefile Commands
 
-#### Electron App
+The project includes a comprehensive Makefile for easy development:
+
+```bash
+# Development
+make dev              # Start in development mode with hot-reload
+make dev-frontend     # Start only frontend in dev mode
+make dev-backend      # Start only backend in dev mode
+
+# Building
+make build            # Build for production
+make build:mac        # Build for macOS
+make build:win        # Build for Windows
+make build:linux      # Build for Linux
+
+# Maintenance
+make clean            # Clean build artifacts
+make clean-all        # Deep clean (including node_modules)
+make install          # Install all dependencies
+make status           # Check project status
+make version          # Show current version
+
+# Testing & Quality
+make test             # Run tests
+make lint             # Run linters
+make format           # Format code
+
+# Git Helpers
+make push             # Quick git add, commit, and push
+make pull             # Pull latest changes
+
+# View all commands
+make help             # Show all available commands with descriptions
+```
+
+### NPM Scripts
+
+For direct npm usage in the electron-app directory:
+
 ```bash
 npm run dev           # Start Vite dev server
 npm run build         # Build for production
 npm run electron      # Start Electron (waits for dev server)
 npm run electron:dev  # Start both Vite and Electron
 npm run preview       # Preview production build
+npm run test          # Run tests
+npm run lint          # Run linter
+npm run format        # Format code
 ```
 
 ### Code Style
-- ESLint configuration for TypeScript
-- Prettier for code formatting
+- ESLint configuration for TypeScript (planned)
+- Prettier for code formatting (planned)
 - Pre-commit hooks with Husky (recommended setup)
 
 ### Testing
 ```bash
-# Run unit tests (when implemented)
-npm test
-
-# Run E2E tests (when implemented)
-npm run test:e2e
+make test             # Run all tests
+make lint             # Check code style
+make format           # Auto-format code
 ```
 
 ## 🤝 Contributing
@@ -231,8 +305,27 @@ Electron Builder configuration can be modified in `package.json`:
 
 ## 🚢 Deployment
 
-### Desktop Application
-Build packages for different platforms:
+### Desktop Application Builds
+
+Use Make commands for easy platform-specific builds:
+
+```bash
+# Build for current platform
+make build
+
+# Platform-specific builds
+make build:mac      # Build for macOS (.dmg)
+make build:win      # Build for Windows (.exe installer)
+make build:linux    # Build for Linux (.AppImage)
+
+# Clean and rebuild
+make clean && make build
+```
+
+### Manual Build Process
+
+If not using Make, from the electron-app directory:
+
 ```bash
 # Windows
 npm run build:win
@@ -245,14 +338,31 @@ npm run build:linux
 ```
 
 ### Docker Deployment
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
 
-# Or build images separately
-docker build -t tacti-mesh-frontend ./electron-app
-docker build -t tacti-mesh-backend ./backend
+```bash
+# Using Make
+make docker-build   # Build Docker images
+make docker-up      # Start services
+make docker-down    # Stop services
+
+# Manual Docker commands
+docker-compose build
+docker-compose up -d
+docker-compose down
 ```
+
+### Release Process
+
+1. Update version in `electron-app/package.json`
+2. Build for all platforms:
+   ```bash
+   make clean
+   make build:mac
+   make build:win
+   make build:linux
+   ```
+3. Test builds on each platform
+4. Create GitHub release with built artifacts
 
 ## 🔒 Security
 
