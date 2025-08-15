@@ -1,17 +1,27 @@
 {
-  "name": "electron-app",
+  "name": "tacti-mesh",
+  "productName": "TactiMesh",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A tactical mesh network visualization and command system",
   "type": "module",
   "main": "dist-electron/main.js",
+  "author": "LlewAdamson",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
+    "build:mac": "npm run build:for-electron && electron-builder --mac",
+    "build:win": "npm run build:for-electron && electron-builder --win",
+    "build:linux": "npm run build:for-electron && electron-builder --linux",
     "preview": "vite preview",
     "electron": "wait-on tcp:5173 && cross-env IS_DEV=true electron .",
     "electron:pack": "electron-builder",
     "electron:dev": "concurrently \"npm run dev\" \"npm run electron\"",
-    "build:for-electron": "tsc && vite build"
+    "build:for-electron": "tsc && vite build",
+    "test": "echo \"No tests configured yet\" && exit 0",
+    "lint": "echo \"No linter configured yet\" && exit 0",
+    "format": "echo \"No formatter configured yet\" && exit 0"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
@@ -33,5 +43,35 @@
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.tacti.mesh",
+    "productName": "TactiMesh",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
